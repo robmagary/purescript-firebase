@@ -36,7 +36,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable, null, toMaybe)
 import Effect (Effect)
-import Effect.Aff (Aff)
+import Effect.Aff (Aff, Error, attempt)
 import Firebase.App (FirebaseApp)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -99,10 +99,10 @@ foreign import signInAnonymouslyImp :: Fn1 Auth (Effect (Promise Unit))
 signInAnonymously :: Auth -> Aff Unit
 signInAnonymously auth = runFn1 signInAnonymouslyImp auth # toAffE
 
-foreign import signInWithEmailAndPasswordImp :: Fn3 String String Auth (Effect (Promise Unit))
+foreign import signInWithEmailAndPasswordImp :: Fn3 String String Auth (Effect (Promise UserCredential))
 
-signInWithEmailAndPassword :: String -> String -> Auth -> Aff Unit
-signInWithEmailAndPassword email password auth = runFn3 signInWithEmailAndPasswordImp email password auth # toAffE
+signInWithEmailAndPassword :: String -> String -> Auth -> Aff (Either Error UserCredential)
+signInWithEmailAndPassword email password auth = runFn3 signInWithEmailAndPasswordImp email password auth # toAffE # attempt
 
 -- TODO: add Unsubscribe
 foreign import onAuthStateChangedImp :: Fn2 (Nullable User -> Effect Unit) Auth (Effect (Effect Unit))
